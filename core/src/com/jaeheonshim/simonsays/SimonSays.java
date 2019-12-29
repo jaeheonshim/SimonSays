@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.jaeheonshim.simonsays.screens.CreditScreen;
 import com.jaeheonshim.simonsays.screens.PlayScreen;
 
 public class SimonSays extends Game {
@@ -18,7 +19,7 @@ public class SimonSays extends Game {
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
-		setScreen(new PlayScreen(batch, this));
+		setScreen(new CreditScreen(batch, this));
 	}
 
 	@Override
