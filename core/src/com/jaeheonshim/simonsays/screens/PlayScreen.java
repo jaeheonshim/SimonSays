@@ -2,6 +2,7 @@ package com.jaeheonshim.simonsays.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -29,6 +30,11 @@ public class PlayScreen implements Screen {
     final float SEQUENCE_START_DELAY = 3;
     final float SEQUENCE_BETWEEN_DELAY = 0.1f;
 
+    private final Sound YELLOW_SOUND = Gdx.audio.newSound(Gdx.files.internal("g_sharp.wav"));
+    private final Sound BLUE_SOUND = Gdx.audio.newSound(Gdx.files.internal("c_sharp.wav"));
+    private final Sound GREEN_SOUND = Gdx.audio.newSound(Gdx.files.internal("d_sharp.wav"));
+    private final Sound RED_SOUND = Gdx.audio.newSound(Gdx.files.internal("f_sharp.wav"));
+
     private Random random;
 
     private ArrayList<GameColors> sequence;
@@ -42,6 +48,8 @@ public class PlayScreen implements Screen {
     private boolean checkingSequence = false;
     private boolean isDelayingNextSequence = false;
     private boolean isDelayingBetweenSequence = false;
+    private boolean soundPlayed;
+
     private boolean buttonPressed;
     private int sequenceIndex;
     private int checkSequenceIndex;
@@ -56,16 +64,16 @@ public class PlayScreen implements Screen {
     private final Color BRIGHTYELLOW = Color.valueOf("eeff00");
 
     enum GameColors {
-        YELLOW, BLUE, GREEN, RED
+        YELLOW, BLUE, GREEN, RED;
     }
 
     public PlayScreen() {
         viewport = new FitViewport(SimonSays.GAME_WIDTH, SimonSays.GAME_HEIGHT);
         renderer = new ShapeRenderer();
-
-        sequence = new ArrayList<>(Arrays.asList(GameColors.YELLOW, GameColors.BLUE, GameColors.YELLOW, GameColors.BLUE, GameColors.YELLOW, GameColors.BLUE));
-
         random = new Random();
+
+        sequence = new ArrayList<>();
+        addColorToSequence();
     }
 
     @Override
@@ -78,11 +86,12 @@ public class PlayScreen implements Screen {
             playingSequence = true;
             sequenceIndex = 0;
             blockPlayTimer = PLAY_HIGHLIGHT_LENGTH;
+            soundPlayed = false;
         }
 
-        if(isDelayingBetweenSequence) {
+        if (isDelayingBetweenSequence) {
             sequenceBetweenDelayTimer -= delta;
-            if(sequenceBetweenDelayTimer <= 0) {
+            if (sequenceBetweenDelayTimer <= 0) {
                 isDelayingBetweenSequence = false;
             } else {
                 return null;
@@ -99,9 +108,33 @@ public class PlayScreen implements Screen {
             blockPlayTimer = PLAY_HIGHLIGHT_LENGTH;
             sequenceBetweenDelayTimer = SEQUENCE_BETWEEN_DELAY;
             isDelayingBetweenSequence = true;
+            soundPlayed = false;
             return null;
         }
+        if (!soundPlayed) {
+            getSound(sequence.get(sequenceIndex)).play();
+            soundPlayed = true;
+        }
         return sequence.get(sequenceIndex);
+    }
+
+    private Sound getSound(GameColors color) {
+        if (color != null) {
+            switch (color) {
+                case RED:
+                    return RED_SOUND;
+                case BLUE:
+                    return BLUE_SOUND;
+                case GREEN:
+                    return GREEN_SOUND;
+                case YELLOW:
+                    return YELLOW_SOUND;
+                default:
+                    return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     private boolean checkSequence(GameColors color) {
@@ -146,9 +179,10 @@ public class PlayScreen implements Screen {
             checkingSequence = true;
         }
 
-        if(isDelayingNextSequence) {
+        if (isDelayingNextSequence) {
+            highlightedColor = null;
             sequencePlayDelayTimer -= delta;
-            if(sequencePlayDelayTimer <= 0) {
+            if (sequencePlayDelayTimer <= 0) {
                 addColorToSequence();
                 playSequence(0);
                 isDelayingNextSequence = false;
@@ -157,15 +191,20 @@ public class PlayScreen implements Screen {
             }
         }
 
-        if(checkingSequence) {
-            if(!Gdx.input.isTouched()) {
+        if (checkingSequence) {
+            if (!Gdx.input.isTouched()) {
                 buttonPressed = false;
             }
-            if(Gdx.input.isTouched() && !buttonPressed) {
+            if (Gdx.input.isTouched() && !buttonPressed) {
                 buttonPressed = true;
                 highlightedColor = getTouchedColor(viewport.getCamera().unproject(new Vector3(Gdx.input.getX(), Gdx.input.getY(), 0)));
-                if(checkSequence(highlightedColor)) {
-                    if(checkSequenceIndex + 1 < sequence.size()) {
+
+                Sound buttonSound = getSound(highlightedColor);
+                if (buttonSound != null) {
+                    buttonSound.play();
+                }
+                if (checkSequence(highlightedColor)) {
+                    if (checkSequenceIndex + 1 < sequence.size()) {
                         checkSequenceIndex++;
                     } else {
                         checkingSequence = false;
@@ -173,7 +212,6 @@ public class PlayScreen implements Screen {
                         sequencePlayDelayTimer = SEQUENCE_START_DELAY;
                         sequenceIndex = 0;
                         checkSequenceIndex = 0;
-                        System.out.println("Going again");
                     }
                 } else {
                     System.out.println("incorrect");
@@ -181,7 +219,7 @@ public class PlayScreen implements Screen {
                 }
             } else {
                 highlightTimer -= delta;
-                if(highlightTimer <= 0) {
+                if (highlightTimer <= 0) {
                     highlightTimer = TOUCH_HIGHLIGHT_LENGTH;
                     highlightedColor = null;
                 }
@@ -245,6 +283,9 @@ public class PlayScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        YELLOW_SOUND.dispose();
+        BLUE_SOUND.dispose();
+        RED_SOUND.dispose();
+        GREEN_SOUND.dispose();
     }
 }
