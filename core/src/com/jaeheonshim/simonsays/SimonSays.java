@@ -5,6 +5,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.jaeheonshim.simonsays.screens.PlayScreen;
 
@@ -16,7 +17,8 @@ public class SimonSays extends Game {
 	
 	@Override
 	public void create () {
-		setScreen(new PlayScreen());
+		batch = new SpriteBatch();
+		setScreen(new PlayScreen(batch, this));
 	}
 
 	@Override
@@ -29,6 +31,5 @@ public class SimonSays extends Game {
 	@Override
 	public void dispose () {
 		batch.dispose();
-		img.dispose();
 	}
 }
