@@ -1,6 +1,7 @@
 package com.jaeheonshim.simonsays.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -15,7 +16,6 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.jaeheonshim.simonsays.SimonSays;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import static com.jaeheonshim.simonsays.SimonSays.GAME_HEIGHT;
@@ -23,10 +23,10 @@ import static com.jaeheonshim.simonsays.SimonSays.GAME_WIDTH;
 
 public class PlayScreen implements Screen {
     public static final int SCOREBOX_WIDTH = 350;
-    public static final int SCOREBOX_HEIGHT = 220;
+    public static final int SCOREBOX_HEIGHT = 260;
     public static final int SCOREBOX_TITLE_OFFSET = 20;
     public static final int SCOREBOX_SCORE_OFFSET = 75;
-    public static final int SCOREBOX_TEXT_OFFSET = 140;
+    public static final int SCOREBOX_TEXT_OFFSET = 170;
     public static final float STATUS_FONT_SCALE = 0.7f;
     private final int STATUS_TEXT_OFFSET = 95;
     private final int TITLE_TEXT_OFFSET = 32;
@@ -83,6 +83,8 @@ public class PlayScreen implements Screen {
     private final Color BRIGHTGREEN = Color.valueOf("15ff00");
     private final Color DARKYELLOW = Color.valueOf("9da800");
     private final Color BRIGHTYELLOW = Color.valueOf("eeff00");
+
+    Preferences prefs = Gdx.app.getPreferences("com.jaeheonshim.simonsays");
 
     enum GameColors {
         YELLOW, BLUE, GREEN, RED;
@@ -250,6 +252,10 @@ public class PlayScreen implements Screen {
                     } else {
                         FAIL_SOUND.play();
                         failed = true;
+                        if(prefs.getInteger("highScore", 0) < sequence.size() - 1) {
+                            prefs.putInteger("highScore", sequence.size() - 1);
+                            prefs.flush();
+                        }
                     }
                 } else {
                     highlightTimer -= delta;
@@ -336,7 +342,8 @@ public class PlayScreen implements Screen {
         batch.begin();
         font.setColor(Color.BLACK);
         font.draw(batch, "GOOD GAME!", scoreBoxOrigin.x, scoreBoxOrigin.y + SCOREBOX_HEIGHT - SCOREBOX_TITLE_OFFSET, SCOREBOX_WIDTH, Align.center, false);
-        font.draw(batch, "SCORE: " + (sequence.size() - 1), scoreBoxOrigin.x + 15, scoreBoxOrigin.y + SCOREBOX_HEIGHT - SCOREBOX_SCORE_OFFSET, SCOREBOX_WIDTH, Align.left, true);
+        font.draw(batch, "SCORE: " + (sequence.size() - 1), scoreBoxOrigin.x - 20, scoreBoxOrigin.y + SCOREBOX_HEIGHT - SCOREBOX_SCORE_OFFSET, SCOREBOX_WIDTH, Align.right, true);
+        font.draw(batch, "HIGH SCORE: " + prefs.getInteger("highScore"), scoreBoxOrigin.x - 20, scoreBoxOrigin.y + SCOREBOX_HEIGHT - 115, SCOREBOX_WIDTH, Align.right, true);
         font.draw(batch, "Tap anywhere to try again", scoreBoxOrigin.x, scoreBoxOrigin.y + SCOREBOX_HEIGHT - SCOREBOX_TEXT_OFFSET, SCOREBOX_WIDTH, Align.center, true);
         batch.end();
     }
